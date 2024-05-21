@@ -924,7 +924,7 @@ server <- function(input, output) {
         
         dataAPI_json = rjson::fromJSON(file = PreDataAPI)
         dataAPI_df1 <- do.call(rbind, dataAPI_json$forecast$forecastday)
-        dataAPI_df2 <- do.call(cbind, dataAPI_df1[,5]) #datos horarios
+        dataAPI_df2 <- do.call(cbind, dataAPI_df1[,4]) #datos horarios
         dataAPI_df3 <-apply(dataAPI_df2, 2, function(x) as.data.frame(do.call(rbind, x)))
         dataAPI_df4 <- do.call(rbind, dataAPI_df3)
         print(head(dataAPI_df4))
@@ -974,7 +974,7 @@ server <- function(input, output) {
           
           dataAPI_json = rjson::fromJSON(file = PreDataAPI)
           dataAPI_df1 <- do.call(rbind, dataAPI_json$forecast$forecastday)
-          dataAPI_df2 <- do.call(cbind, dataAPI_df1[,5]) #datos horarios
+          dataAPI_df2 <- do.call(cbind, dataAPI_df1[,4]) #datos horarios
           dataAPI_df3 <-apply(dataAPI_df2, 2, function(x) as.data.frame(do.call(rbind, x)))
           dataAPI_df4 <- do.call(rbind, dataAPI_df3)
           print(head(dataAPI_df4))
@@ -1040,7 +1040,7 @@ server <- function(input, output) {
         
         dataAPI_json = rjson::fromJSON(file = PreDataAPI)
         dataAPI_df1 <- do.call(rbind, dataAPI_json$forecast$forecastday)
-        dataAPI_df2 <- do.call(cbind, dataAPI_df1[,5]) #datos horarios
+        dataAPI_df2 <- do.call(cbind, dataAPI_df1[,4]) #datos horarios
         dataAPI_df3 <-apply(dataAPI_df2, 2, function(x) as.data.frame(do.call(rbind, x)))
         dataAPI_df4 <- do.call(rbind, dataAPI_df3)
         #print(head(dataAPI_df4))
@@ -1089,7 +1089,7 @@ server <- function(input, output) {
           
           dataAPI_json = rjson::fromJSON(file = PreDataAPI)
           dataAPI_df1 <- do.call(rbind, dataAPI_json$forecast$forecastday)
-          dataAPI_df2 <- do.call(cbind, dataAPI_df1[,5]) #datos horarios
+          dataAPI_df2 <- do.call(cbind, dataAPI_df1[,4]) #datos horarios
           dataAPI_df3 <-apply(dataAPI_df2, 2, function(x) as.data.frame(do.call(rbind, x)))
           dataAPI_df4 <- do.call(rbind, dataAPI_df3)
           #print(head(dataAPI_df4))
@@ -1143,7 +1143,7 @@ server <- function(input, output) {
         
         dataAPI_json = rjson::fromJSON(file = PreDataAPI)
         dataAPI_df1 <- do.call(rbind, dataAPI_json$forecast$forecastday)
-        dataAPI_df2 <- do.call(cbind, dataAPI_df1[,5]) #datos horarios
+        dataAPI_df2 <- do.call(cbind, dataAPI_df1[,4]) #datos horarios
         dataAPI_df3 <-apply(dataAPI_df2, 2, function(x) as.data.frame(do.call(rbind, x)))
         dataAPI_df4 <- do.call(rbind, dataAPI_df3)
         print(head(dataAPI_df4))
@@ -1191,7 +1191,7 @@ server <- function(input, output) {
       
       dataAPI_json = rjson::fromJSON(file = PreDataAPI)
       dataAPI_df1 <- do.call(rbind, dataAPI_json$forecast$forecastday)
-      dataAPI_df2 <- do.call(cbind, dataAPI_df1[,5]) #datos horarios
+      dataAPI_df2 <- do.call(cbind, dataAPI_df1[,4]) #datos horarios
       dataAPI_df3 <-apply(dataAPI_df2, 2, function(x) as.data.frame(do.call(rbind, x)))
       dataAPI_df4 <- do.call(rbind, dataAPI_df3)
       print(head(dataAPI_df4))
