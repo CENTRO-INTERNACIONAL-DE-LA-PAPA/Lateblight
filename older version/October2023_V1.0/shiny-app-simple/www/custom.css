@@ -1,0 +1,60 @@
+/* CSS TEMPLATE FOR LATE BLIGHT SHINY APP */
+/* @marvinjonathcn */
+
+
+/* Titulo del encabezado - logo*/
+.main-header .logo {
+  font-family: "Georgia", Times, "Times New Roman", serif;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+
+/* Fondo del logo*/
+.skin-green .main-header .logo {
+          background-color: #17c278;
+         
+          
+        }
+        
+        
+/* Fondo del logo cuando se tiene el cursos encima*/
+.skin-green .main-header .logo:hover {
+          background-color: #ffea00;
+        }
+        
+
+/* Fondo de la barra de navegacion, al costado del logo */
+.skin-green .main-header .navbar {
+                              background-color: #17c278;
+                              } 
+                              
+/* Fondo del sidebar */
+        .skin-green .main-sidebar {
+                              background-color: #1f362d;
+                              
+                              }
+
+/* Fondo y color de los item del sidebar activos */
+        .skin-green .main-sidebar .sidebar .sidebar-menu .active a{
+                              background-color: #196348;
+                              color:white;
+                              }
+
+/* Fondo de los item del sidebar */
+        .skin-green .main-sidebar .sidebar .sidebar-menu a{
+                              background-color: #1f362d;  
+                              color: white;
+                              }
+
+/* Fondo y color de los items del sidebar con el mouse encima */
+         .skin-green .main-sidebar .sidebar .sidebar-menu a:hover{
+                              background-color: #196348;
+                              color:white;
+                              }
+                              
+/* Fondo del boton de despliegue del sidebar*/           
+.skin-green .main-header .navbar .sidebar-toggle:hover{
+                              background-color: black;
+                              }
+                              

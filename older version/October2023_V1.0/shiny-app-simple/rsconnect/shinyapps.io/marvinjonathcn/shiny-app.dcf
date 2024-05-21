@@ -1,0 +1,13 @@
+name: shiny-app
+title: shiny-app
+username:
+account: marvinjonathcn
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2682147
+bundleId: 3531035
+url: https://marvinjonathcn.shinyapps.io/shiny-app/
+when: 1597777915.77614
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: calendarplot/plot_1.png|calendarplot/plot_2.png|calendarplot/plot_3.png
