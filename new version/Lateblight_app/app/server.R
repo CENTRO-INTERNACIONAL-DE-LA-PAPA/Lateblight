@@ -8,7 +8,6 @@ server <- function(input, output, session) {
   API_Method_history <- '/history.json'
   API_Method_forecast <- '/forecast.json'
   API_key <- Sys.getenv("API_KEY")
-  # API_key <- '?key=28884cc8d61e46cbb3793258221912'
   
   
   # Assign NULL to object values with fileinput NULL
