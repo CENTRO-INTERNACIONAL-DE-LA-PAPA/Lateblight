@@ -1096,7 +1096,7 @@ server <- function(input, output, session) {
           dataAPI_df1 <-
             do.call(rbind, dataAPI_json$forecast$forecastday)
           dataAPI_df2 <-
-            do.call(cbind, dataAPI_df1[, 4]) #datos horarios
+            do.call(cbind, dataAPI_df1[, "hour"]) #datos horarios
           dataAPI_df3 <-
             apply(dataAPI_df2, 2, function(x)
               as.data.frame(do.call(rbind, x)))
@@ -1104,7 +1104,7 @@ server <- function(input, output, session) {
           print(head(dataAPI_df4))
           
           
-          climData <- dataAPI_df4[, c(2, 3, 8, 7)]
+          climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
           climData[, 1] <-
             as.POSIXct(as.character(climData[, 1]), format = "%Y-%m-%d %H:%M")
           climData[, 2] <- as.numeric(climData[, 2])
