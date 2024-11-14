@@ -26,7 +26,7 @@ RUN apt-get update -qq && \
     libpcre3-dev \
     libsodium-dev \
     libtcl8.6 \
-    libtiff5 \
+    libtiff5-dev \
     libtk8.6 \
     libx11-6 \
     libxt6 \
