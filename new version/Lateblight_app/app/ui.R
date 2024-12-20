@@ -261,13 +261,13 @@ ui <- bs4Dash::dashboardPage(
             ),
             lead = 'The tool was designed to promote efficient and sustainable pesticide use, while also providing educational resources and adaptive management strategies. This tool aimed to not only monitor and predict late blight outbreaks but also to offer actionable, real-time advice to farmers.',
             btnName = 'Visit GitHub Repository',
-            href = 'https://github.com/cip-riu',
+            href = 'https://github.com/CENTRO-INTERNACIONAL-DE-LA-PAPA/Lateblight',
             status = 'success'
           )
         )),
         fluidRow(
           column(12, 
-                 bs4Callout(title = 'Authors', status = 'info',width = 6,markdown('Henry Juarez, Willmer Perez, Marvin Quispe, Piero Palacios and Jorge Andrade')),
+                 bs4Callout(title = 'Authors', status = 'info',width = 6,markdown('Henry Juarez, Piero Palacios, Willmer Perez, Marvin Quispe and Jorge Andrade')),
                  bs4Callout(title = 'Contact', status = 'info', width = 6, 'h.juarez@cgiar.org')
                  )
         )
