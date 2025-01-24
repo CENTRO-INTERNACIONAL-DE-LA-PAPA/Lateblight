@@ -830,7 +830,7 @@ server <- function(input, output, session) {
       return(TRUE)
       
       
-    } else if (vt == "hr" & abu >= 60) {
+    } else if (vt == "hr" & abu >= 50) {
       return(TRUE)
       
       
@@ -857,7 +857,7 @@ server <- function(input, output, session) {
       return(TRUE)
       
       
-    } else if (vt == "hr" & afu > 50) {
+    } else if (vt == "hr" & afu > 35) {
       return(TRUE)
       
       
