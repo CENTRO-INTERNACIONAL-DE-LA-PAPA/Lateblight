@@ -1557,9 +1557,9 @@ server <- function(input, output, session) {
     for (k in 1:end) {
       line <- lines[[k]]
       day <- line[[1]]
-      hhr <- as.numeric(line[[4]])
-      htavg <- as.numeric(line[[5]])
-      rain <- as.numeric(line[[6]])
+      hhr <- as.numeric(line[[2]])
+      htavg <- as.numeric(line[[3]])
+      rain <- as.numeric(line[[4]])
       bu <- calc_bu(hhr, htavg, vt)
       last_bua <- bua
       bua <- bu + bua
@@ -1570,7 +1570,7 @@ server <- function(input, output, session) {
       } else {
         days_since_app <- days_since_app + 1
         fu = calc_fu(rain, days_since_app)
-        last_fua = fu
+        last_fua = fua
         fua = fu + fua
       }
       
@@ -1612,11 +1612,12 @@ server <- function(input, output, session) {
         fua <- 0
       }
       
-      if (fua < last_fua && days_since_app > min_day) {
+      if (check_fu_cutoff(fua,vt) && days_since_app < min_day) {
         afu <- 1
         app <- TRUE
         app_ctr <- app_ctr + 1
         days_since_app <- 0
+        fua <-0
         
       } else {
         app <- FALSE
