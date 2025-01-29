@@ -1707,7 +1707,7 @@ server <- function(input, output, session) {
     
     rsf <- rbindlist(runsimcast2, fill = TRUE, idcol = "ID-Location")
     fungicide_rec <- fungicide_recommendation(rsf,input$res)
-    rsf <- b |> 
+    rsf <- rsf |> 
         left_join(fungicide_rec,by=join_by("date"=="Date"))
     
     return(list(runsimcast2, rsf))
