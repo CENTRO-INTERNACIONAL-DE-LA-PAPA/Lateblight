@@ -1124,12 +1124,13 @@ server <- function(input, output, session) {
               return(length(RH[RH > as.numeric(hrlimite)]))
             }
           )
+          hr_avg <- aggregate(hr ~ date_daily, climData, mean)
           
           input_runsimcast <-
-            data.frame(hr_hours2, tmean2[, 2], pp2[, 2])
+            data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
           
           names(input_runsimcast) <-
-            c("date", "hr90_hour", "tavg_C", "rain_mm")
+            c("date", "hr90_hour", "tavg_C", "rain_mm","avg_hr")
           print(input_runsimcast)
           
           # input-runsimcast: date, hr>90, temp avg, rain
@@ -1196,11 +1197,13 @@ server <- function(input, output, session) {
               }
             )
             
+            hr_avg <- aggregate(hr ~ date_daily, climData, mean)
+            
             input_runsimcast <-
-              data.frame(hr_hours2, tmean2[, 2], pp2[, 2])
+              data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
             
             names(input_runsimcast) <-
-              c("date", "hr90_hour", "tavg_C", "rain_mm")
+              c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
             
             # input-runsimcast: date, hr>90, temp avg, rain
             
@@ -1279,11 +1282,13 @@ server <- function(input, output, session) {
             }
           )
           
+          hr_avg <- aggregate(hr ~ date_daily, climData, mean)
+          
           input_runsimcast_h <-
-            data.frame(hr_hours2, tmean2[, 2], pp2[, 2])
+            data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
           
           names(input_runsimcast_h) <-
-            c("date", "hr90_hour", "tavg_C", "rain_mm")
+            c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
           #print(input_runsimcast_h)
           
           # input-runsimcast: date, hr>90, temp avg, rain
@@ -1352,11 +1357,13 @@ server <- function(input, output, session) {
               }
             )
             
+            hr_avg <- aggregate(hr ~ date_daily, climData, mean)
+            
             input_runsimcast_h <-
-              data.frame(hr_hours2, tmean2[, 2], pp2[, 2])
+              data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
             
             names(input_runsimcast_h) <-
-              c("date", "hr90_hour", "tavg_C", "rain_mm")
+              c("date", "hr90_hour", "tavg_C", "rain_mm","avg_hr")
             
             # input-runsimcast: date, hr>90, temp avg, rain
             
@@ -1423,12 +1430,13 @@ server <- function(input, output, session) {
               return(length(RH[RH > as.numeric(hrlimite)]))
             }
           )
+          hr_avg <- aggregate(hr ~ date_daily, climData, mean)
           
           input_runsimcast_f <-
-            data.frame(hr_hours2, tmean2[, 2], pp2[, 2])
+            data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
           
           names(input_runsimcast_f) <-
-            c("date", "hr90_hour", "tavg_C", "rain_mm")
+            c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
           
           # input-runsimcast: date, hr>90, temp avg, rain
           
@@ -1488,12 +1496,13 @@ server <- function(input, output, session) {
             return(length(RH[RH > as.numeric(hrlimite)]))
           }
         )
+        hr_avg <- aggregate(hr ~ date_daily, climData, mean)
         
         input_runsimcast_f <-
-          data.frame(hr_hours2, tmean2[, 2], pp2[, 2])
+          data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
         
         names(input_runsimcast_f) <-
-          c("date", "hr90_hour", "tavg_C", "rain_mm")
+          c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
         
         return(input_runsimcast_f)
         
@@ -1566,10 +1575,12 @@ server <- function(input, output, session) {
       
       if (abu != 1 && afu != 1 && days_since_app <= 0) {
         days_since_app <- 0} else {
+            
         days_since_app <- days_since_app + 1
         fu = calc_fu(rain, days_since_app)
         last_fua = fua
         fua = fu + fua
+        
       }
       
       # modify && by ll (and "!") if you need the first app according to the dss
@@ -1695,6 +1706,9 @@ server <- function(input, output, session) {
     print(runsimcast2)
     
     rsf <- rbindlist(runsimcast2, fill = TRUE, idcol = "ID-Location")
+    fungicide_rec <- fungicide_recommendation(rsf,input$res)
+    rsf <- b |> 
+        left_join(fungicide_rec,by=join_by("date"=="Date"))
     
     return(list(runsimcast2, rsf))
     
