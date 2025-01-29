@@ -841,6 +841,7 @@ server <- function(input, output, session) {
   }
   
   check_fu_cutoff <- function(afu, vt) {
+      
     if (vt == "s" & afu > 15) {
       return(TRUE)
       
@@ -1175,7 +1176,7 @@ server <- function(input, output, session) {
             dataAPI_df4 <- do.call(rbind, dataAPI_df3)
             print(head(dataAPI_df4))
             
-            climData <- dataAPI_df4[, c(2, 3, 8, 7)]
+            climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
             climData[, 1] <-
               as.POSIXct(as.character(climData[, 1]), format = "%Y-%m-%d %H:%M")
             climData[, 2] <- as.numeric(climData[, 2])
@@ -1258,7 +1259,7 @@ server <- function(input, output, session) {
           dataAPI_df4 <- do.call(rbind, dataAPI_df3)
           #print(head(dataAPI_df4))
           
-          climData <- dataAPI_df4[, c(2, 3, 8, 7)]
+          climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
           climData[, 1] <-
             as.POSIXct(as.character(climData[, 1]), format = "%Y-%m-%d %H:%M")
           climData[, 2] <- as.numeric(climData[, 2])
@@ -1331,7 +1332,7 @@ server <- function(input, output, session) {
             dataAPI_df4 <- do.call(rbind, dataAPI_df3)
             #print(head(dataAPI_df4))
             
-            climData <- dataAPI_df4[, c(2, 3, 8, 7)]
+            climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
             climData[, 1] <-
               as.POSIXct(as.character(climData[, 1]), format = "%Y-%m-%d %H:%M")
             climData[, 2] <- as.numeric(climData[, 2])
@@ -1403,7 +1404,7 @@ server <- function(input, output, session) {
           dataAPI_df4 <- do.call(rbind, dataAPI_df3)
           print(head(dataAPI_df4))
           
-          climData <- dataAPI_df4[, c(2, 3, 8, 7)]
+          climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
           climData[, 1] <-
             as.POSIXct(as.character(climData[, 1]), format = "%Y-%m-%d %H:%M")
           climData[, 2] <- as.numeric(climData[, 2])
@@ -1468,7 +1469,7 @@ server <- function(input, output, session) {
         dataAPI_df4 <- do.call(rbind, dataAPI_df3)
         print(head(dataAPI_df4))
         
-        climData <- dataAPI_df4[, c(2, 3, 8, 7)]
+        climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
         climData[, 1] <-
           as.POSIXct(as.character(climData[, 1]), format = "%Y-%m-%d %H:%M")
         climData[, 2] <- as.numeric(climData[, 2])
