@@ -1611,7 +1611,7 @@ server <- function(input, output, session) {
         fua <- 0
       }
       
-      if (check_fu_cutoff(last_fua,vt) && days_since_app < min_day && days_since_app>4) {
+      if (check_fu_cutoff(last_fua,vt) && days_since_app < min_day && days_since_app>=5) {
         afu <- 1
         app <- TRUE
         app_ctr <- app_ctr + 1
@@ -1619,9 +1619,10 @@ server <- function(input, output, session) {
         fua <-0
         bua <- 0
         
-      } else {
+      } else if(check_fu_cutoff(last_fua,vt) && days_since_app > min_day && days_since_app>=5) {
         app <- FALSE
         afu <- 0
+        abu <- 0
       }
       
       tabu <- abu + tabu
