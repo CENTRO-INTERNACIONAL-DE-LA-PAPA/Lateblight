@@ -1557,9 +1557,9 @@ server <- function(input, output, session) {
     for (k in 1:end) {
       line <- lines[[k]]
       day <- line[[1]]
-      hhr <- as.numeric(line[[2]])
-      htavg <- as.numeric(line[[3]])
-      rain <- as.numeric(line[[4]])
+      hhr <- as.numeric(line[[4]])
+      htavg <- as.numeric(line[[5]])
+      rain <- as.numeric(line[[6]])
       bu <- calc_bu(hhr, htavg, vt)
       last_bua <- bua
       bua <- bu + bua
