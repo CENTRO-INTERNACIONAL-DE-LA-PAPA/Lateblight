@@ -854,11 +854,11 @@ server <- function(input, output, session) {
       return(TRUE)
       
       
-    } else if (vt == "r" & afu > 35) {
+    } else if (vt == "r" & afu > 30) {
       return(TRUE)
       
       
-    } else if (vt == "hr" & afu > 45) {
+    } else if (vt == "hr" & afu > 35) {
       return(TRUE)
       
       
@@ -1612,7 +1612,7 @@ server <- function(input, output, session) {
         
       }
       
-      if (k == 1) { ##
+      if (k == 25) { ##
         abu <- 1
         app <- TRUE
         app_ctr <- app_ctr + 1
