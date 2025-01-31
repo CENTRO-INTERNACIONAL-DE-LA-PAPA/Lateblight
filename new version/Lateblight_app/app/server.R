@@ -1537,17 +1537,17 @@ server <- function(input, output, session) {
     last_fua <- 0
     app_ctr <- 0
     days_since_app <- 0
-    
-    if(vt == 's' || vt == 'ms'){
-      min_day <- 7
-    } else if(vt == 'mr'){
-      min_day <- 9
-    } else if(vt == 'r'){
-      min_day <- 11
-    } else if (vt == 'hr'){
-      min_day <- 15
-    }
-    
+    min_day <- 7
+    # if(vt == 's' || vt == 'ms'){
+    #   min_day <- 7
+    # } else if(vt == 'mr'){
+    #   min_day <- 9
+    # } else if(vt == 'r'){
+    #   min_day <- 11
+    # } else if (vt == 'hr'){
+    #   min_day <- 15
+    # }
+    # 
     abu <- 0
     tabu <- 0
     tafu <- 0
@@ -1578,7 +1578,7 @@ server <- function(input, output, session) {
             
         days_since_app <- days_since_app + 1
         fu = calc_fu(rain, days_since_app)
-        last_fua = fua
+        last_fua = fu
         fua = fu + fua
         
       }
