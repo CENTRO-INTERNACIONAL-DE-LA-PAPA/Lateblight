@@ -854,11 +854,11 @@ server <- function(input, output, session) {
       return(TRUE)
       
       
-    } else if (vt == "r" & afu > 30) {
+    } else if (vt == "r" & afu > 35) {
       return(TRUE)
       
       
-    } else if (vt == "hr" & afu > 35) {
+    } else if (vt == "hr" & afu > 45) {
       return(TRUE)
       
       
@@ -1062,31 +1062,30 @@ server <- function(input, output, session) {
   # function for calculate humidity relative hourly - Weather API
   # INPUTS: day initial, day final, coordinates (lat y long), hr limit
   
-  climDataAPI_input_model <-
-    function(day0,
+  climDataAPI_input_model <- function(day0,
              dayn,
              lat,
              long,
              hrlimite,
              calculate_hhr) {
+        
       dayinitial <- day0
       dayfinal <- dayn
       sysdate <- Sys.Date()
       API_q_coordinates <- paste('&q=', lat, ',', long, sep = '')
       difftime_day <- as.numeric(dayn - day0)
       
-      print(paste0("Emergence date: ",dayinitial))
-      print(paste0("Final day: ",dayfinal))
+      print(paste0("Planting date: ",dayinitial))
+      print(paste0("Forecast day: ",dayfinal))
       
       
-      if ((dayinitial < sysdate) == TRUE &&
-          (dayfinal < sysdate) == TRUE) {
-        if (difftime_day <= 30) {
-          API_date <-
-            paste('&dt=', dayinitial, '&end_dt=', dayfinal, sep = '')
+      if((dayinitial < sysdate) == TRUE && (dayfinal < sysdate) == TRUE) {
           
-          PreDataAPI <-
-            paste(URL_base,
+        if (difftime_day <= 30) {
+            
+          API_date <- paste('&dt=', dayinitial, '&end_dt=', dayfinal, sep = '')
+          
+          PreDataAPI <- paste(URL_base,
                   API_Method_history,
                   API_key,
                   API_q_coordinates,
@@ -1229,6 +1228,7 @@ server <- function(input, output, session) {
       
       else if ((dayinitial < sysdate) == TRUE &&
                (dayfinal >= sysdate) == TRUE) {
+          
         dayinitial_h <- dayinitial
         dayfinal_h <- sysdate - 1
         dayinitial_f <- sysdate
@@ -1578,7 +1578,7 @@ server <- function(input, output, session) {
             
         days_since_app <- days_since_app + 1
         fu = calc_fu(rain, days_since_app)
-        last_fua = fua
+        last_fua = fu
         fua = fu + fua
         
       }
@@ -1622,18 +1622,15 @@ server <- function(input, output, session) {
         fua <- 0
       }
       
-      if (check_fu_cutoff(last_fua,vt) && days_since_app < min_day && days_since_app>=5) {
+      if (fua < last_fua && days_since_app > min_day) {
         afu <- 1
         app <- TRUE
         app_ctr <- app_ctr + 1
         days_since_app <- 0
-        fua <-0
-        bua <- 0
         
-      } else if(check_fu_cutoff(last_fua,vt) && days_since_app > min_day && days_since_app>=5) {
+      } else {
         app <- FALSE
         afu <- 0
-        abu <- 0
       }
       
       tabu <- abu + tabu
@@ -1672,8 +1669,6 @@ server <- function(input, output, session) {
   observe({
     data_pts <- values$markers
     print(data_pts)
-    
-    
   })
   
   
@@ -1789,12 +1784,12 @@ server <- function(input, output, session) {
   })
   
   output$downloadData <- downloadHandler(
-    filename = function() {
-      "GEOSIMCAST.csv"
-    },
-    content = function(fname) {
-      write.csv(tableGS2()[[2]], fname, row.names = T)
-    }
+      filename = function() {
+          "GEOSIMCAST.csv"
+      },
+      content = function(fname) {
+          write.csv(tableGS2()[[2]], fname, row.names = T)
+      }
   )
   
   ####################

@@ -930,7 +930,7 @@ server <- function(input, output) {
         print(head(dataAPI_df4))
         
       
-        climData <- dataAPI_df4[, c(2,3,8,7)]
+        climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
         climData[,1] <- as.POSIXct(as.character(climData[,1]), format = "%Y-%m-%d %H:%M")
         climData[,2] <- as.numeric(climData[,2])
         climData[,3] <- as.numeric(climData[,3])
@@ -979,7 +979,7 @@ server <- function(input, output) {
           dataAPI_df4 <- do.call(rbind, dataAPI_df3)
           print(head(dataAPI_df4))
           
-          climData <- dataAPI_df4[, c(2,3,8,7)]
+          climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
           climData[,1] <- as.POSIXct(as.character(climData[,1]), format = "%Y-%m-%d %H:%M")
           climData[,2] <- as.numeric(climData[,2])
           climData[,3] <- as.numeric(climData[,3])
@@ -1045,7 +1045,7 @@ server <- function(input, output) {
         dataAPI_df4 <- do.call(rbind, dataAPI_df3)
         #print(head(dataAPI_df4))
         
-        climData <- dataAPI_df4[, c(2,3,8,7)]
+        climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
         climData[,1] <- as.POSIXct(as.character(climData[,1]), format = "%Y-%m-%d %H:%M")
         climData[,2] <- as.numeric(climData[,2])
         climData[,3] <- as.numeric(climData[,3])
@@ -1094,7 +1094,7 @@ server <- function(input, output) {
           dataAPI_df4 <- do.call(rbind, dataAPI_df3)
           #print(head(dataAPI_df4))
           
-          climData <- dataAPI_df4[, c(2,3,8,7)]
+          climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
           climData[,1] <- as.POSIXct(as.character(climData[,1]), format = "%Y-%m-%d %H:%M")
           climData[,2] <- as.numeric(climData[,2])
           climData[,3] <- as.numeric(climData[,3])
@@ -1148,7 +1148,7 @@ server <- function(input, output) {
         dataAPI_df4 <- do.call(rbind, dataAPI_df3)
         print(head(dataAPI_df4))
         
-        climData <- dataAPI_df4[, c(2,3,8,7)]
+        climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
         climData[,1] <- as.POSIXct(as.character(climData[,1]), format = "%Y-%m-%d %H:%M")
         climData[,2] <- as.numeric(climData[,2])
         climData[,3] <- as.numeric(climData[,3])
@@ -1196,7 +1196,7 @@ server <- function(input, output) {
       dataAPI_df4 <- do.call(rbind, dataAPI_df3)
       print(head(dataAPI_df4))
       
-      climData <- dataAPI_df4[, c(2,3,8,7)]
+      climData <- dataAPI_df4[, c("time","temp_c","humidity","precip_mm")]
       climData[,1] <- as.POSIXct(as.character(climData[,1]), format = "%Y-%m-%d %H:%M")
       climData[,2] <- as.numeric(climData[,2])
       climData[,3] <- as.numeric(climData[,3])
@@ -1277,7 +1277,6 @@ server <- function(input, output) {
       
       if(abu != 1 && afu != 1 && days_since_app <= 0){
         days_since_app <- 0
-        
       } else {
         days_since_app <- days_since_app + 1
         fu = calc_fu(rain, days_since_app)
