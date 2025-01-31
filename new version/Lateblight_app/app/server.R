@@ -1621,7 +1621,7 @@ server <- function(input, output, session) {
         fua <- 0
       }
       
-      if (fua < last_fua && days_since_app > min_day && check_fu_cutoff(fua, vt)) {
+      if (fua < last_fua && days_since_app > min_day) {
         afu <- 1
         app <- TRUE
         app_ctr <- app_ctr + 1
