@@ -854,11 +854,11 @@ server <- function(input, output, session) {
       return(TRUE)
       
       
-    } else if (vt == "r" & afu > 30) {
+    } else if (vt == "r" & afu > 35) {
       return(TRUE)
       
       
-    } else if (vt == "hr" & afu > 35) {
+    } else if (vt == "hr" & afu > 45) {
       return(TRUE)
       
       
