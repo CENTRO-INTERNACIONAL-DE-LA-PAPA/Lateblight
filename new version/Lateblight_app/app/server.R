@@ -1578,7 +1578,7 @@ server <- function(input, output, session) {
             
         days_since_app <- days_since_app + 1
         fu = calc_fu(rain, days_since_app)
-        last_fua = fu
+        last_fua = fua
         fua = fu + fua
         
       }
