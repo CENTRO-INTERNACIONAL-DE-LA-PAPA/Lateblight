@@ -1537,7 +1537,7 @@ server <- function(input, output, session) {
     last_fua <- 0
     app_ctr <- 0
     days_since_app <- 0
-    min_day <- 5
+    min_day <- 7
     # if(vt == 's' || vt == 'ms'){
     #   min_day <- 7
     # } else if(vt == 'mr'){
@@ -1621,7 +1621,7 @@ server <- function(input, output, session) {
         fua <- 0
       }
       
-      if (fua < last_fua && days_since_app > min_day) {
+      if (fua < last_fua && days_since_app > min_day && check_fu_cutoff(fua, vt)) {
         afu <- 1
         app <- TRUE
         app_ctr <- app_ctr + 1
