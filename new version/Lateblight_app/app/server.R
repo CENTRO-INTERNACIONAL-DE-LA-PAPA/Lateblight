@@ -1578,7 +1578,7 @@ server <- function(input, output, session) {
             
         days_since_app <- days_since_app + 1
         fu = calc_fu(rain, days_since_app)
-        last_fua = fu
+        last_fua = fua
         fua = fu + fua
         
       }
@@ -1597,8 +1597,7 @@ server <- function(input, output, session) {
         }
       }
       
-      if (bua >= last_bua ||
-          days_since_app <= min_day && !firstApplication) {
+      if (bua >= last_bua || days_since_app <= min_day && !firstApplication) {
         app <- FALSE
         abu <- 0
         afu <- 0
