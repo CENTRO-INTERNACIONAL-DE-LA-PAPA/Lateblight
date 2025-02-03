@@ -1611,7 +1611,7 @@ server <- function(input, output, session) {
         
       }
       
-      if (k == 25) { ##
+      if (k == 1) { ##
         abu <- 1
         app <- TRUE
         app_ctr <- app_ctr + 1

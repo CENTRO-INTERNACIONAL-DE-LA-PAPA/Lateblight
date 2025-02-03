@@ -124,7 +124,7 @@ ui <- bs4Dash::dashboardPage(
                         h3("Crop information"),
                         br(),
                         column(5,
-                               dateInput("date0", "Planting date:", Sys.Date() -
+                               dateInput("date0", "Emergence date:", Sys.Date() -
                                            7)),
                         column(
                           5,
