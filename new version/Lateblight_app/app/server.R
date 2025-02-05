@@ -1585,17 +1585,17 @@ server <- function(input, output, session) {
       
       # modify && by ll (and "!") if you need the first app according to the dss
       
-      if (days_since_app > min_day && !firstApplication) {
-        if (check_bu_cutoff(bua, vt)) {
-          bua <- 0
-          fua <- 0
-        }
-
-        if (check_fu_cutoff(fua, vt)) {
-          bua <- 0
-          fua <- 0
-        }
-      }
+      # if (days_since_app > min_day && !firstApplication) {
+      #   if (check_bu_cutoff(bua, vt)) {
+      #     bua <- 0
+      #     fua <- 0
+      #   }
+      # 
+      #   if (check_fu_cutoff(fua, vt)) {
+      #     bua <- 0
+      #     fua <- 0
+      #   }
+      # }
       
       if (bua >= last_bua || days_since_app <= min_day && !firstApplication) {
         app <- FALSE
@@ -1621,15 +1621,21 @@ server <- function(input, output, session) {
         fua <- 0
       }
       
-      if (fua < last_fua && days_since_app > min_day) {
-        afu <- 1
-        app <- TRUE
-        app_ctr <- app_ctr + 1
-        days_since_app <- 0
-        
-      } else {
-        app <- FALSE
-        afu <- 0
+      if (check_fu_cutoff(fua, vt) && days_since_app > min_day && !firstApplication) {
+          afu <- 1
+          app <- TRUE
+          app_ctr <- app_ctr + 1
+          days_since_app <- 0
+          bua <- 0
+          fua <- 0
+          
+      } else if (check_bu_cutoff(fua, vt) && days_since_app > min_day && !firstApplication) {
+          afu <- 1
+          app <- TRUE
+          app_ctr <- app_ctr + 1
+          days_since_app <- 0
+          bua <- 0
+          fua <- 0
       }
       
       tabu <- abu + tabu
