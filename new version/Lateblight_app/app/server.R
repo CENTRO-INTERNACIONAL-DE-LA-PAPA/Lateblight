@@ -1537,7 +1537,7 @@ server <- function(input, output, session) {
     last_fua <- 0
     app_ctr <- 0
     days_since_app <- 0
-    min_day <- 5
+    min_day <- 7
     # if(vt == 's' || vt == 'ms'){
     #   min_day <- 7
     # } else if(vt == 'mr'){
@@ -1574,8 +1574,8 @@ server <- function(input, output, session) {
       bua <- bu + bua
       
       if (abu != 1 && afu != 1 && days_since_app <= 0) {
-        days_since_app <- 0} else {
-            
+        days_since_app <- 0
+        } else {
         days_since_app <- days_since_app + 1
         fu = calc_fu(rain, days_since_app)
         last_fua = fua
