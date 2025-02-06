@@ -7,13 +7,13 @@ fungicide_recommendation <- function(df, resistance){
     group_by(APP) |> 
     summarise(n = n()-1, date = first(date)) |> 
     mutate(fungicide_type = case_when(
-      
       n >= 7 ~ 'Systemic',
       n < 7 ~ 'Contact',
       
     )) |> 
     mutate(APP = as.integer(APP)) |> 
     rename("Date"=date)
+  
   
   if(resistance == 'mr'){
     
