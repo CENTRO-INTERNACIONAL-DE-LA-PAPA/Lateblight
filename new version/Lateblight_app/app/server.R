@@ -871,193 +871,6 @@ server <- function(input, output, session) {
   # function for calculate humidity relative hourly
   # INPUTS: meterological data, coordinates (lat y long)
   
-  calculate_hhr <- function(climdata, lon, lat) {
-    #########################
-    
-    date_df <- as.Date(climdata[[1]], format = "%Y-%m-%d")
-    tn <- as.numeric(climdata[[2]])
-    tx <- as.numeric(climdata[[3]])
-    tavg <- (tn + tx) / 2
-    hrn <- as.numeric(climdata[[4]])
-    hrx <- as.numeric(climdata[[5]])
-    hravg <- (hrn + hrx) / 2
-    tdew <- tavg - ((100 - hravg) / 5)
-    rain <- as.numeric(climdata[[6]])
-    
-    
-    # Calculate hourly for sunrise and sunset
-    
-    crds <- matrix(c(lon[[1]], lat[[1]]), ncol = 2)
-    
-    sunrise <- sunriset(
-      crds,
-      as.POSIXct(date_df),
-      proj4string = CRS("+proj=longlat +datum=WGS84"),
-      direction = c("sunrise"),
-      POSIXct.out = F
-    )
-    
-    sunset <- sunriset(
-      crds,
-      as.POSIXct(date_df),
-      proj4string = CRS("+proj=longlat +datum=WGS84"),
-      direction = c("sunset"),
-      POSIXct.out = F
-    )
-    
-    
-    df_format_hhr <-
-      data.frame(date_df[-c(length(date_df), 1)],
-                 tn[-c(length(tn), 1)],
-                 tn[-c(1:2)],
-                 tx[-c(length(tx), 1)],
-                 tx[-c(length(tx), length(tx) - 1)],
-                 tdew[-c(length(tdew), 1)],
-                 sunrise[-c(length(sunrise), 1)],
-                 sunset[-c(length(sunset), 1)],
-                 sunset[-c(length(sunset), length(sunset) - 1)])
-    
-    names(df_format_hhr) <- c(
-      "date",
-      "tmin",
-      "tminnext",
-      "tmax",
-      "tmaxold",
-      "tdew",
-      "sunrise",
-      "sunset",
-      "sunset old"
-    )
-    
-    #########################
-    
-    # Tn temp min, Tx temp max, To sunset , Tp temp min next
-    # Hn sunrise, Hx h temp max, Ho h sunset , Hp h temp min next
-    # date <- df_in_hhr[[1]]
-    
-    #####
-    
-    model_temp_hr <- function(df_in_hhr) {
-      Tn <- as.numeric(df_in_hhr[[2]])
-      Tp <- as.numeric(df_in_hhr[[3]])
-      Tx <- as.numeric(df_in_hhr[[4]])
-      Hn <- as.numeric(df_in_hhr[[7]]) * 24
-      Ho <- as.numeric(df_in_hhr[[8]]) * 24
-      tdew <- as.numeric(df_in_hhr[[6]])
-      
-      #####
-      
-      Tp_old <- Tn
-      Hp_old <- Hn + 24
-      Tx_old <- as.numeric(df_in_hhr[[5]])
-      Ho_old <- as.numeric(df_in_hhr[[9]]) * 24
-      To_old <- Tx_old - 0.39 * (Tx_old - Tp_old)
-      
-      # Parameters for model
-      To <- Tx - 0.39 * (Tx - Tp)
-      Hp <- Hn + 24
-      Hx <- Ho - 4
-      
-      alpha <- Tx - Tn
-      r <- Tx - To
-      beta1 <- (Tp - To) / sqrt(Hp - Ho)
-      beta2 <- (Tp_old - To_old) / sqrt(Hp_old - Ho_old)
-      
-      t <- 1:24
-      T_model <- 0
-      
-      for (i in 1:24) {
-        if (t[i] > Hn & t[i] <= Hx) {
-          T_model[i] <- Tn + alpha * (((t[i] - Hn) / (Hx - Hn)) * (pi / 2))
-          
-        }
-        
-        else if (t[i] > Hx & t[i] <= Ho) {
-          T_model[i] <- To + r * sin((pi / 2) + (((t[i] - Hx) / 4) * (pi / 2)))
-          
-        }
-        
-        else if (t[i] > Ho & t[i] <= 24) {
-          T_model[i] <- To + beta1 * sqrt((t[i] - Ho))
-          
-        }
-        
-        else if (t[i] >= 1 & t[i] <= Hn) {
-          T_model[i] <- To_old + beta2 * sqrt((t[i] + 24) - Ho_old)
-          
-        }
-        
-        
-        else {
-          T_model[i] <- "Error"
-          
-        }
-        
-      }
-      
-      
-      # Buck formula for es and e (kPa)
-      
-      es <-
-        0.61121 * exp(((18.678 - (
-          T_model / 234.5
-        )) * T_model) / (257.14 + T_model))
-      e <-
-        0.61121 * exp(((18.678 - (tdew / 234.5)) * tdew) / (257.14 + tdew))
-      
-      # hr
-      hr <- (e / es) * 100
-      df <- data.frame(T_model, hr)
-      
-      return(df)
-    }
-    
-    
-    df_temp_hr_hour <-
-      apply(df_format_hhr, 1 , function(x)
-        model_temp_hr(x))
-    
-    df_temp_hr_hour_simcast <- list()
-    
-    for (i in 1:(length(df_temp_hr_hour) - 1)) {
-      df_temp_hr_hour_simcast[[i]] <- rbind(df_temp_hr_hour[[i]][13:24, ],
-                                            df_temp_hr_hour[[i + 1]][1:12, ])
-      
-      
-    }
-    
-    
-    hr_limit90_temp <- function(x) {
-      temp_model_prom <- ifelse(nrow(x[x[, 2] > 90,]) > 0,
-                                mean(x[x[, 2] > 90, 1]),
-                                mean(x[, 1]))
-      
-      
-      hr_model_hours <- nrow(x[x[, 2] > 90,])
-      df <- data.frame(temp_model_prom, hr_model_hours)
-      return(df)
-    }
-    
-    
-    list_hours <-
-      lapply(df_temp_hr_hour_simcast, function(x)
-        hr_limit90_temp(x))
-    df_hours <- rbindlist(list_hours)
-    
-    
-    df_output_hr <-
-      data.frame(date_df[-c(length(date_df), 1, 2)], df_hours[, 2],
-                 tavg[-c(length(date_df), 1, 2)], rain[-c(length(rain), 1, 2)])
-    
-    names(df_output_hr) <-
-      c("date", "hr90_hour", "tavg_C", "rain_mm")
-    
-    print("Run temperature and humidity model...")
-    
-    return(df_output_hr)
-    
-  }
-  
   
   # function for calculate humidity relative hourly - Weather API
   # INPUTS: day initial, day final, coordinates (lat y long), hr limit
@@ -1066,8 +879,7 @@ server <- function(input, output, session) {
              dayn,
              lat,
              long,
-             hrlimite,
-             calculate_hhr) {
+             hrlimite) {
         
       dayinitial <- day0
       dayfinal <- dayn
@@ -1112,29 +924,38 @@ server <- function(input, output, session) {
           climData[, 4] <- as.numeric(climData[, 4])
           names(climData) <- c("date_hour", "tmean", "hr", "pp")
           
+          df <- climData %>%
+              # Convert date_hour to POSIXct
+              dplyr::mutate(datetime = as.POSIXct(date_hour, format = "%Y-%m-%d %H:%M:%S"),
+                     # Extract the hour (0-23)
+                     hour = hour(datetime),
+                     # Create a "period" indicator: observations from 13:00 to 23:59 belong to the same calendar day,
+                     # while observations from 00:00 to 12:00 are assigned to the previous day.
+                     period = if_else(hour >= 13, as.Date(datetime), as.Date(datetime) - 1)
+              )
+          daily_summary <- df %>%
+              group_by(period) %>%
+              summarize(
+                  # Count the number of hours in the period with relative humidity >= 90.
+                  hhr = sum(hr >= 90, na.rm = TRUE),
+                  # Calculate the average temperature only over hours with hr >= 90.
+                  htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
+                      mean(tmean[hr >= 90], na.rm = TRUE)
+                  } else {
+                      NA_real_
+                  },
+                  daily_precip = sum(pp, na.rm = TRUE),
+                  avg_humidity = mean(hr, na.rm = TRUE)
+              ) %>% 
+              as.data.frame()
           
-          climData$date_daily <- format(climData$date_hour, "%Y-%m-%d")
-          tmean2 <- aggregate(tmean ~ date_daily, climData, mean)
-          pp2 <- aggregate(pp ~ date_daily, climData, sum)
-          hr_hours2 <- aggregate(
-            hr ~ date_daily,
-            climData,
-            FUN = function(RH) {
-              return(length(RH[RH > as.numeric(hrlimite)]))
-            }
-          )
-          hr_avg <- aggregate(hr ~ date_daily, climData, mean)
-          
-          input_runsimcast <-
-            data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
-          
-          names(input_runsimcast) <-
+          names(daily_summary) <-
             c("date", "hr90_hour", "tavg_C", "rain_mm","avg_hr")
-          print(input_runsimcast)
+          print(daily_summary)
           
           # input-runsimcast: date, hr>90, temp avg, rain
           
-          return(input_runsimcast)
+          return(daily_summary)
           
           
         }
@@ -1184,29 +1005,38 @@ server <- function(input, output, session) {
             climData[, 4] <- as.numeric(climData[, 4])
             names(climData) <- c("date_hour", "tmean", "hr", "pp")
             
-            climData$date_daily <-
-              format(climData$date_hour, "%Y-%m-%d")
-            tmean2 <- aggregate(tmean ~ date_daily, climData, mean)
-            pp2 <- aggregate(pp ~ date_daily, climData, sum)
-            hr_hours2 <- aggregate(
-              hr ~ date_daily,
-              climData,
-              FUN = function(RH) {
-                return(length(RH[RH > as.numeric(hrlimite)]))
-              }
-            )
+            df <- climData %>%
+                # Convert date_hour to POSIXct
+                dplyr::mutate(
+                    datetime = as.POSIXct(date_hour, format = "%Y-%m-%d %H:%M:%S"),
+                    # Extract the hour (0-23)
+                    hour = hour(datetime),
+                    # Create a "period" indicator: observations from 13:00 to 23:59 belong to the same calendar day,
+                    # while observations from 00:00 to 12:00 are assigned to the previous day.
+                    period = if_else(hour >= 13, as.Date(datetime), as.Date(datetime) - 1)
+                )
+            daily_summary <- df %>%
+                group_by(period) %>%
+                summarize(
+                    # Count the number of hours in the period with relative humidity >= 90.
+                    hhr = sum(hr >= 90, na.rm = TRUE),
+                    # Calculate the average temperature only over hours with hr >= 90.
+                    htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
+                        mean(tmean[hr >= 90], na.rm = TRUE)
+                    } else {
+                        NA_real_
+                    },
+                    daily_precip = sum(pp, na.rm = TRUE),
+                    avg_humidity = mean(hr, na.rm = TRUE)
+                ) %>%
+                as.data.frame()
             
-            hr_avg <- aggregate(hr ~ date_daily, climData, mean)
-            
-            input_runsimcast <-
-              data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
-            
-            names(input_runsimcast) <-
-              c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
+            names(daily_summary) <-
+                c("date", "hr90_hour", "tavg_C", "rain_mm","avg_hr")
             
             # input-runsimcast: date, hr>90, temp avg, rain
             
-            list_input_runsimcast[[i]] <- input_runsimcast
+            list_input_runsimcast[[i]] <- daily_summary
             
             if (i == (length(seq_API_date) - 1)) {
               break
@@ -1270,30 +1100,39 @@ server <- function(input, output, session) {
           climData[, 4] <- as.numeric(climData[, 4])
           names(climData) <- c("date_hour", "tmean", "hr", "pp")
           
+          df <- climData %>%
+              # Convert date_hour to POSIXct
+              dplyr::mutate(
+                  datetime = as.POSIXct(date_hour, format = "%Y-%m-%d %H:%M:%S"),
+                  # Extract the hour (0-23)
+                  hour = hour(datetime),
+                  # Create a "period" indicator: observations from 13:00 to 23:59 belong to the same calendar day,
+                  # while observations from 00:00 to 12:00 are assigned to the previous day.
+                  period = if_else(hour >= 13, as.Date(datetime), as.Date(datetime) - 1)
+              )
+          daily_summary <- df %>%
+              group_by(period) %>%
+              summarize(
+                  # Count the number of hours in the period with relative humidity >= 90.
+                  hhr = sum(hr >= 90, na.rm = TRUE),
+                  # Calculate the average temperature only over hours with hr >= 90.
+                  htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
+                      mean(tmean[hr >= 90], na.rm = TRUE)
+                  } else {
+                      NA_real_
+                  },
+                  daily_precip = sum(pp, na.rm = TRUE),
+                  avg_humidity = mean(hr, na.rm = TRUE)
+              ) %>%
+              as.data.frame()
           
-          climData$date_daily <- format(climData$date_hour, "%Y-%m-%d")
-          tmean2 <- aggregate(tmean ~ date_daily, climData, mean)
-          pp2 <- aggregate(pp ~ date_daily, climData, sum)
-          hr_hours2 <- aggregate(
-            hr ~ date_daily,
-            climData,
-            FUN = function(RH) {
-              return(length(RH[RH > as.numeric(hrlimite)]))
-            }
-          )
-          
-          hr_avg <- aggregate(hr ~ date_daily, climData, mean)
-          
-          input_runsimcast_h <-
-            data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
-          
-          names(input_runsimcast_h) <-
+          names(daily_summary) <-
             c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
           #print(input_runsimcast_h)
           
           # input-runsimcast: date, hr>90, temp avg, rain
           
-          #return(input_runsimcast_h);
+          return(daily_summary)
           
         }
         
@@ -1345,29 +1184,38 @@ server <- function(input, output, session) {
             climData[, 4] <- as.numeric(climData[, 4])
             names(climData) <- c("date_hour", "tmean", "hr", "pp")
             
-            climData$date_daily <-
-              format(climData$date_hour, "%Y-%m-%d")
-            tmean2 <- aggregate(tmean ~ date_daily, climData, mean)
-            pp2 <- aggregate(pp ~ date_daily, climData, sum)
-            hr_hours2 <- aggregate(
-              hr ~ date_daily,
-              climData,
-              FUN = function(RH) {
-                return(length(RH[RH > as.numeric(hrlimite)]))
-              }
-            )
+            df <- climData %>%
+                # Convert date_hour to POSIXct
+                dplyr::mutate(
+                    datetime = as.POSIXct(date_hour, format = "%Y-%m-%d %H:%M:%S"),
+                    # Extract the hour (0-23)
+                    hour = hour(datetime),
+                    # Create a "period" indicator: observations from 13:00 to 23:59 belong to the same calendar day,
+                    # while observations from 00:00 to 12:00 are assigned to the previous day.
+                    period = if_else(hour >= 13, as.Date(datetime), as.Date(datetime) - 1)
+                )
+            daily_summary <- df %>%
+                group_by(period) %>%
+                summarize(
+                    # Count the number of hours in the period with relative humidity >= 90.
+                    hhr = sum(hr >= 90, na.rm = TRUE),
+                    # Calculate the average temperature only over hours with hr >= 90.
+                    htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
+                        mean(tmean[hr >= 90], na.rm = TRUE)
+                    } else {
+                        NA_real_
+                    },
+                    daily_precip = sum(pp, na.rm = TRUE),
+                    avg_humidity = mean(hr, na.rm = TRUE)
+                ) %>%
+                as.data.frame()
             
-            hr_avg <- aggregate(hr ~ date_daily, climData, mean)
-            
-            input_runsimcast_h <-
-              data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
-            
-            names(input_runsimcast_h) <-
-              c("date", "hr90_hour", "tavg_C", "rain_mm","avg_hr")
+            names(daily_summary) <-
+                c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
             
             # input-runsimcast: date, hr>90, temp avg, rain
             
-            list_input_runsimcast_h[[i]] <- input_runsimcast_h
+            list_input_runsimcast_h[[i]] <- daily_summary
             
             if (i == (length(seq_API_date) - 1)) {
               break
@@ -1381,7 +1229,7 @@ server <- function(input, output, session) {
           input_runsimcast_h <- unique(input_runsimcast_h)
           #print(input_runsimcast_h)
           
-          #return(input_runsimcast_h);
+          return(input_runsimcast_h)
           
         }
         
@@ -1420,27 +1268,38 @@ server <- function(input, output, session) {
           names(climData) <- c("date_hour", "tmean", "hr", "pp")
           
           
-          climData$date_daily <- format(climData$date_hour, "%Y-%m-%d")
-          tmean2 <- aggregate(tmean ~ date_daily, climData, mean)
-          pp2 <- aggregate(pp ~ date_daily, climData, sum)
-          hr_hours2 <- aggregate(
-            hr ~ date_daily,
-            climData,
-            FUN = function(RH) {
-              return(length(RH[RH > as.numeric(hrlimite)]))
-            }
-          )
-          hr_avg <- aggregate(hr ~ date_daily, climData, mean)
+          df <- climData %>%
+              # Convert date_hour to POSIXct
+              dplyr::mutate(
+                  datetime = as.POSIXct(date_hour, format = "%Y-%m-%d %H:%M:%S"),
+                  # Extract the hour (0-23)
+                  hour = hour(datetime),
+                  # Create a "period" indicator: observations from 13:00 to 23:59 belong to the same calendar day,
+                  # while observations from 00:00 to 12:00 are assigned to the previous day.
+                  period = if_else(hour >= 13, as.Date(datetime), as.Date(datetime) - 1)
+              )
+          daily_summary <- df %>%
+              group_by(period) %>%
+              summarize(
+                  # Count the number of hours in the period with relative humidity >= 90.
+                  hhr = sum(hr >= 90, na.rm = TRUE),
+                  # Calculate the average temperature only over hours with hr >= 90.
+                  htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
+                      mean(tmean[hr >= 90], na.rm = TRUE)
+                  } else {
+                      NA_real_
+                  },
+                  daily_precip = sum(pp, na.rm = TRUE),
+                  avg_humidity = mean(hr, na.rm = TRUE)
+              ) %>%
+              as.data.frame()
           
-          input_runsimcast_f <-
-            data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
-          
-          names(input_runsimcast_f) <-
-            c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
+          names(daily_summary) <-
+              c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
           
           # input-runsimcast: date, hr>90, temp avg, rain
           
-          #return(input_runsimcast_f);
+          return(daily_summary)
           
         }
         
@@ -1486,29 +1345,37 @@ server <- function(input, output, session) {
         names(climData) <- c("date_hour", "tmean", "hr", "pp")
         
         
-        climData$date_daily <- format(climData$date_hour, "%Y-%m-%d")
-        tmean2 <- aggregate(tmean ~ date_daily, climData, mean)
-        pp2 <- aggregate(pp ~ date_daily, climData, sum)
-        hr_hours2 <- aggregate(
-          hr ~ date_daily,
-          climData,
-          FUN = function(RH) {
-            return(length(RH[RH > as.numeric(hrlimite)]))
-          }
-        )
-        hr_avg <- aggregate(hr ~ date_daily, climData, mean)
+        df <- climData %>%
+            # Convert date_hour to POSIXct
+            dplyr::mutate(
+                datetime = as.POSIXct(date_hour, format = "%Y-%m-%d %H:%M:%S"),
+                # Extract the hour (0-23)
+                hour = hour(datetime),
+                # Create a "period" indicator: observations from 13:00 to 23:59 belong to the same calendar day,
+                # while observations from 00:00 to 12:00 are assigned to the previous day.
+                period = if_else(hour >= 13, as.Date(datetime), as.Date(datetime) - 1)
+            )
+        daily_summary <- df %>%
+            group_by(period) %>%
+            summarize(
+                # Count the number of hours in the period with relative humidity >= 90.
+                hhr = sum(hr >= 90, na.rm = TRUE),
+                # Calculate the average temperature only over hours with hr >= 90.
+                htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
+                    mean(tmean[hr >= 90], na.rm = TRUE)
+                } else {
+                    NA_real_
+                },
+                daily_precip = sum(pp, na.rm = TRUE),
+                avg_humidity = mean(hr, na.rm = TRUE)
+            ) %>%
+            as.data.frame()
         
-        input_runsimcast_f <-
-          data.frame(hr_hours2, tmean2[, 2], pp2[, 2], hr_avg[,2])
+        names(daily_summary) <-
+            c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
         
-        names(input_runsimcast_f) <-
-          c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
-        
-        return(input_runsimcast_f)
-        
-        
+        return(daily_summary)
       }
-      
       
     }
   
@@ -1516,157 +1383,147 @@ server <- function(input, output, session) {
   # function for SIMCAST model Fry et. al 1983
   
   simcast_model <- function(df_in_simcast, vt) {
-    vt <- as.character(vt[[1]])
-    
-    lines <- list()
-    for (i in 1:nrow(df_in_simcast)) {
-      lines[[i]] = df_in_simcast[i, ]
-    }
-    
-    #########
-    firstApplication <- TRUE
-    returnValue <- 1
-    bu <- 0
-    fu <- 0
-    bua <- 0
-    fua <- 0
-    afu <- 0
-    app <- 0
-    i <- 0
-    last_bua <- 0
-    last_fua <- 0
-    app_ctr <- 0
-    days_since_app <- 0
-    min_day <- 7
-    # if(vt == 's' || vt == 'ms'){
-    #   min_day <- 7
-    # } else if(vt == 'mr'){
-    #   min_day <- 9
-    # } else if(vt == 'r'){
-    #   min_day <- 11
-    # } else if (vt == 'hr'){
-    #   min_day <- 15
-    # }
-    # 
-    abu <- 0
-    tabu <- 0
-    tafu <- 0
-    #begin <- 0
-    end <- length(lines)
-    ###############
-    
-    bu_final <- 0
-    fu_final <- 0
-    bua_final <- 0
-    fua_final <- 0
-    abu_final <- 0
-    afu_final <- 0
-    app_final <- 0
-    
-    for (k in 1:end) {
-      line <- lines[[k]]
-      day <- line[[1]]
-      hhr <- as.numeric(line[[2]])
-      htavg <- as.numeric(line[[3]])
-      rain <- as.numeric(line[[4]])
-      bu <- calc_bu(hhr, htavg, vt)
-      last_bua <- bua
-      bua <- bu + bua
       
-      if (abu != 1 && afu != 1 && days_since_app <= 0) {
-        days_since_app <- 0} else {
-            
-        days_since_app <- days_since_app + 1
-        fu = calc_fu(rain, days_since_app)
-        last_fua = fua
-        fua = fu + fua
-        
-      }
+      vt <- as.character(vt[[1]])
+      firstApplication <- TRUE
+      app_ctr <- 0          # total number of applications made
+      days_since_app <- 0   # count days since last application
+      min_day <- 7
       
-      # modify && by ll (and "!") if you need the first app according to the dss
+      bua <- 0  # Accumulated Blight Units
+      fua <- 0  # Accumulated Fungicide Units
       
-      # if (days_since_app > min_day && !firstApplication) {
-      #   if (check_bu_cutoff(bua, vt)) {
-      #     bua <- 0
-      #     fua <- 0
-      #   }
-      # 
-      #   if (check_fu_cutoff(fua, vt)) {
-      #     bua <- 0
-      #     fua <- 0
-      #   }
-      # }
+      n <- nrow(df_in_simcast)
+      # Vectors to record daily values:
+      bu_vec   <- numeric(n)  # daily BU
+      fu_vec   <- numeric(n)  # daily FU
+      bua_vec  <- numeric(n)  # running accumulated BU
+      fua_vec  <- numeric(n)  # running accumulated FU
+      abu_vec  <- numeric(n)  # flag for application based on BU cutoff (1 if applied)
+      afu_vec  <- numeric(n)  # flag for application based on FU cutoff (1 if applied)
+      app_vec  <- numeric(n)  # cumulative count of applications
+      trigger_vec <- character(n) 
       
-      if (bua >= last_bua || days_since_app <= min_day && !firstApplication) {
-        app <- FALSE
-        abu <- 0
-        afu <- 0
-        
-      } else {
-        abu <- 1
-        app <- TRUE
-        app_ctr <- app_ctr + 1
-        days_since_app <- 0
-        #firstApplication <- FALSE
-        
-      }
-      
-      if (k == 24) { ##
-        abu <- 1
-        app <- TRUE
-        app_ctr <- app_ctr + 1
-        days_since_app <- 0
-        firstApplication <- FALSE
-        bua <- 0
-        fua <- 0
-      }
-      
-      if (check_fu_cutoff(fua, vt) && days_since_app > min_day && !firstApplication) {
-          afu <- 1
-          app <- TRUE
-          app_ctr <- app_ctr + 1
-          days_since_app <- 0
-          bua <- 0
-          fua <- 0
+      for (k in 1:n) {
+          # Extract daily values from the input dataframe.
+          # (We assume that "hr90_hour" is the count of hours with HR>=90,
+          #  "tavg_C" is the average temperature from those hours,
+          #  and "rain_mm" is today's precipitation.)
           
-      } else if (check_bu_cutoff(fua, vt) && days_since_app > min_day && !firstApplication) {
-          afu <- 1
-          app <- TRUE
-          app_ctr <- app_ctr + 1
-          days_since_app <- 0
-          bua <- 0
-          fua <- 0
+          app_trigger <- NA
+          day   <- df_in_simcast$date[k]
+          hhr   <- as.numeric(df_in_simcast$hr90_hour[k])
+          htavg <- as.numeric(df_in_simcast$tavg_C[k])
+          rain  <- as.numeric(df_in_simcast$rain_mm[k])
+          
+          # Calculate today's blight units using your provided function.
+          bu <- calc_bu(hhr, htavg, vt)
+          
+          # Record today's BU.
+          bu_vec[k] <- bu
+          
+          # Decide whether to start accumulating.
+          # If no blight is present (BU and current BUA both zero), then no accumulation
+          # and no fungicide units are calculated.
+          if (bua == 0 && bu == 0) {
+              # Environment not conducive: no accumulation, no application.
+              days_since_app <- days_since_app + 1
+              fu <- 0
+          } else {
+              # Accumulate blight units (start accumulating once even a single unit arises)
+              bua <- bua + bu
+              
+              # Increase the counter of days since last application.
+              days_since_app <- days_since_app + 1
+              
+              # Calculate today's fungicide units.
+              # (calc_fu() must be defined; for example, it might use rain and days_since_app.)
+              fu <- calc_fu(rain, days_since_app)
+              fua <- fua + fu
+          }
+          
+          # Store the current accumulated values.
+          bua_vec[k] <- bua
+          fua_vec[k] <- fua
+          fu_vec[k]  <- fu  # daily fungicide units
+          
+          # Initialize application flags for today's day.
+          abu <- 0  # flag triggered by BU cutoff (set to 1 when application occurs)
+          afu <- 0  # flag triggered by FU cutoff
+          
+          # Decide whether to apply a fungicide.
+          # Only consider making an application if at least one blight unit has accumulated.
+          if (bua > 0) {
+              cutoff_bu_triggered <- check_bu_cutoff(bua, vt)
+              cutoff_fu_triggered <- check_fu_cutoff(fua, vt)
+              
+              if ((cutoff_bu_triggered || cutoff_fu_triggered) &&
+                  days_since_app > min_day && !firstApplication) {
+                  
+                  # Determine which cutoff triggered the application
+                  if (cutoff_bu_triggered && !cutoff_fu_triggered) {
+                      app_trigger <- "BU"
+                  } else if (cutoff_fu_triggered && !cutoff_bu_triggered) {
+                      app_trigger <- "FU"
+                  } else if (cutoff_bu_triggered && cutoff_fu_triggered) {
+                      app_trigger <- "Both"
+                  }
+                  
+                  # Application is triggered.
+                  abu <- 1
+                  afu <- 1
+                  app_ctr <- app_ctr + 1
+                  days_since_app <- 0  # reset day counter
+                  # Reset accumulators after an application.
+                  bua <- 0
+                  fua <- 0
+              }
+          }
+          
+          # As in your original code, force an application on day 24.
+          if (k == 1) {
+              abu <- 1
+              afu <- 1
+              app_ctr <- app_ctr + 1
+              days_since_app <- 0
+              firstApplication <- FALSE
+              bua <- 0
+              fua <- 0
+              app_trigger <- "Forced"
+          }
+          
+          # Store the trigger information for this day.
+          trigger_vec[k] <- app_trigger
+          
+          # Record application flags and cumulative count.
+          bu_vec[k]   <- bu
+          fu_vec[k]   <- fu
+          bua_vec[k]  <- bua
+          fua_vec[k]  <- fua
+          abu_vec[k]  <- abu
+          afu_vec[k]  <- afu
+          app_vec[k]  <- app_ctr
       }
       
-      tabu <- abu + tabu
-      tafu <- afu + tafu
+      # Prepare the output data frame with the new simulation columns.
+      output_simcast <- data.frame(
+          BU = bu_vec,
+          FU = fu_vec,
+          BUA = bua_vec,
+          FUA = fua_vec,
+          ABU = abu_vec,
+          AFU = afu_vec,
+          APP = app_vec,
+          APP_TRIGGER = trigger_vec 
+      )
       
-      bu_final[k] <- bu
-      fu_final[k] <- fu
-      bua_final[k] <- bua
-      fua_final[k] <- fua
-      abu_final[k] <- abu
-      afu_final[k] <- afu
-      app_final[k] <- app_ctr
-    }
-    
-    output_simcast <-
-      data.frame(bu_final,
-                 fu_final,
-                 bua_final,
-                 fua_final,
-                 abu_final,
-                 afu_final,
-                 app_final)
-    
-    names(output_simcast) <-
-      c("BU", "FU", "BUA", "FUA", "ABU", "AFU", "APP")
-    
-    output_scmodel <- cbind(df_in_simcast, output_simcast)
-    
-    print("Running simcast model ... Loading")
-    
-    return(output_scmodel)
+      # Combine the original daily summary with the simulation outputs.
+      output_scmodel <- cbind(df_in_simcast, output_simcast)
+      
+      message("Running simcast model ... Loading")
+      return(output_scmodel)
+      
+      
   }
   
   # -------------------------------------
@@ -1684,7 +1541,7 @@ server <- function(input, output, session) {
     # -2 for initial day
     day0 <- day0_i - 2
     dayn <- input$daten
-    hrlimite <- as.numeric(90)
+    hrlimite <- as.numeric(85)
     
     dataxycoord <- values$markers
     print(dataxycoord)
@@ -1693,7 +1550,7 @@ server <- function(input, output, session) {
     
     strTable <-
       apply(dataxycoord, 1, function(x)
-        climDataAPI_input_model(day0, dayn, x[1], x[2], hrlimite, calculate_hhr))
+        climDataAPI_input_model(day0, dayn, x[1], x[2], hrlimite))
     
     write.csv(strTable, file = "strTable.csv")
     
