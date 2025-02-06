@@ -8,8 +8,8 @@ fungicide_recommendation <- function(df, resistance){
     summarise(n = n()-1, date = first(date)) |> 
     mutate(fungicide_type = case_when(
       
-      n > 7 ~ 'Systemic',
-      n <= 7 ~ 'Contact',
+      n >= 7 ~ 'Systemic',
+      n < 7 ~ 'Contact',
       
     )) |> 
     mutate(APP = as.integer(APP)) |> 
