@@ -1538,6 +1538,7 @@ server <- function(input, output, session) {
     app_ctr <- 0
     days_since_app <- 0
     min_day <- 6
+    
     # if(vt == 's' || vt == 'ms'){
     #   min_day <- 7
     # } else if(vt == 'mr'){
