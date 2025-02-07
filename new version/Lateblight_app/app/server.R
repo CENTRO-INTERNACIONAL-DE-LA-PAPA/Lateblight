@@ -933,6 +933,9 @@ server <- function(input, output, session) {
                      # while observations from 00:00 to 12:00 are assigned to the previous day.
                      period = if_else(hour >= 13, as.Date(datetime), as.Date(datetime) - 1)
               )
+          
+          print(df)
+          
           daily_summary <- df %>%
               group_by(period) %>%
               summarize(
@@ -990,7 +993,7 @@ server <- function(input, output, session) {
             dataAPI_df1 <-
               do.call(rbind, dataAPI_json$forecast$forecastday)
             dataAPI_df2 <-
-              do.call(cbind, dataAPI_df1[, 4]) #datos horarios
+              do.call(cbind, dataAPI_df1[, "hour"]) #datos horarios
             dataAPI_df3 <-
               apply(dataAPI_df2, 2, function(x)
                 as.data.frame(do.call(rbind, x)))
@@ -1110,7 +1113,7 @@ server <- function(input, output, session) {
                   # while observations from 00:00 to 12:00 are assigned to the previous day.
                   period = if_else(hour >= 13, as.Date(datetime), as.Date(datetime) - 1)
               )
-          daily_summary <- df %>%
+          daily_summary_h <- df %>%
               group_by(period) %>%
               summarize(
                   # Count the number of hours in the period with relative humidity >= 90.
@@ -1126,17 +1129,18 @@ server <- function(input, output, session) {
               ) %>%
               as.data.frame()
           
-          names(daily_summary) <-
+          names(daily_summary_h) <-
             c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
           #print(input_runsimcast_h)
           
           # input-runsimcast: date, hr>90, temp avg, rain
           
-          return(daily_summary)
+          # return(daily_summary)
           
         }
         
         else if (difftime_day_h > 30) {
+            
           seq_API_date <-
             unique(c(
               seq(
@@ -1194,7 +1198,7 @@ server <- function(input, output, session) {
                     # while observations from 00:00 to 12:00 are assigned to the previous day.
                     period = if_else(hour >= 13, as.Date(datetime), as.Date(datetime) - 1)
                 )
-            daily_summary <- df %>%
+            daily_summary_h <- df %>%
                 group_by(period) %>%
                 summarize(
                     # Count the number of hours in the period with relative humidity >= 90.
@@ -1210,12 +1214,12 @@ server <- function(input, output, session) {
                 ) %>%
                 as.data.frame()
             
-            names(daily_summary) <-
+            names(daily_summary_h) <-
                 c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
             
             # input-runsimcast: date, hr>90, temp avg, rain
             
-            list_input_runsimcast_h[[i]] <- daily_summary
+            list_input_runsimcast_h[[i]] <- daily_summary_h
             
             if (i == (length(seq_API_date) - 1)) {
               break
@@ -1229,7 +1233,7 @@ server <- function(input, output, session) {
           input_runsimcast_h <- unique(input_runsimcast_h)
           #print(input_runsimcast_h)
           
-          return(input_runsimcast_h)
+          # return(input_runsimcast_h)
           
         }
         
@@ -1252,7 +1256,7 @@ server <- function(input, output, session) {
           dataAPI_df1 <-
             do.call(rbind, dataAPI_json$forecast$forecastday)
           dataAPI_df2 <-
-            do.call(cbind, dataAPI_df1[, 5]) #datos horarios
+            do.call(cbind, dataAPI_df1[, "hour"]) #datos horarios
           dataAPI_df3 <-
             apply(dataAPI_df2, 2, function(x)
               as.data.frame(do.call(rbind, x)))
@@ -1278,7 +1282,7 @@ server <- function(input, output, session) {
                   # while observations from 00:00 to 12:00 are assigned to the previous day.
                   period = if_else(hour >= 13, as.Date(datetime), as.Date(datetime) - 1)
               )
-          daily_summary <- df %>%
+          daily_summary_f <- df %>%
               group_by(period) %>%
               summarize(
                   # Count the number of hours in the period with relative humidity >= 90.
@@ -1294,17 +1298,17 @@ server <- function(input, output, session) {
               ) %>%
               as.data.frame()
           
-          names(daily_summary) <-
+          names(daily_summary_f) <-
               c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
           
           # input-runsimcast: date, hr>90, temp avg, rain
           
-          return(daily_summary)
+          # return(daily_summary)
           
         }
         
         input_runsimcast_h_y_f <-
-          rbind(input_runsimcast_h, input_runsimcast_f)
+          rbind(input_runsimcast_h, daily_summary_f)
         
         print(input_runsimcast_h_y_f)
         return(input_runsimcast_h_y_f)
@@ -1384,6 +1388,8 @@ server <- function(input, output, session) {
   
   simcast_model <- function(df_in_simcast, vt) {
       
+      idx_na <- which(is.na(df_in_simcast$tavg_C))
+      df_in_simcast$tavg_C[idx_na]<-mean(df_in_simcast$tavg_C,na.rm=TRUE)
       vt <- as.character(vt[[1]])
       firstApplication <- TRUE
       app_ctr <- 0          # total number of applications made
@@ -1422,25 +1428,14 @@ server <- function(input, output, session) {
           # Record today's BU.
           bu_vec[k] <- bu
           
-          # Decide whether to start accumulating.
-          # If no blight is present (BU and current BUA both zero), then no accumulation
-          # and no fungicide units are calculated.
-          if (bua == 0 && bu == 0) {
-              # Environment not conducive: no accumulation, no application.
-              days_since_app <- days_since_app + 1
-              fu <- 0
-          } else {
-              # Accumulate blight units (start accumulating once even a single unit arises)
-              bua <- bua + bu
-              
-              # Increase the counter of days since last application.
-              days_since_app <- days_since_app + 1
-              
-              # Calculate today's fungicide units.
-              # (calc_fu() must be defined; for example, it might use rain and days_since_app.)
-              fu <- calc_fu(rain, days_since_app)
-              fua <- fua + fu
-          }
+          
+          # ALWAYS update days_since_app and compute fungicide units:
+          days_since_app <- days_since_app + 1
+          fu <- calc_fu(rain, days_since_app)
+          fua <- fua + fu
+          
+          # Always accumulate blight units (this adds 0 if bu is zero)
+          bua <- bua + bu
           
           # Store the current accumulated values.
           bua_vec[k] <- bua
@@ -1481,7 +1476,7 @@ server <- function(input, output, session) {
           }
           
           # As in your original code, force an application on day 24.
-          if (k == 1) {
+          if (k == 24) {
               abu <- 1
               afu <- 1
               app_ctr <- app_ctr + 1
