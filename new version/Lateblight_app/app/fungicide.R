@@ -4,7 +4,7 @@ fungicide_recommendation <- function(df, resistance){
   print(resistance)
   
   fungicide_applications <- df |> 
-    filter(`ID-Location`==1) |> 
+    filter(`ID-Location`==1 & APP>0) |> 
     group_by(APP) |> 
     summarise(n = n()-1, date = first(date)) |> 
     mutate(fungicide_type = case_when(
