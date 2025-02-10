@@ -126,12 +126,15 @@ ui <- bs4Dash::dashboardPage(
                         column(5,
                                dateInput("date0", "Planting date:", Sys.Date() -
                                            7)),
+                        column(5,
+                               dateInput("date_emergence", "Emergence date:", Sys.Date())
+                            
+                        ),
                         column(
                           5,
                           dateInput("daten", "Forecast date:", Sys.Date()-1, max = Sys.Date() + 14)
                         ),
                         column(2)
-                        
                       ),
                       
                       column(12,

@@ -1311,8 +1311,18 @@ server <- function(input, output, session) {
         input_runsimcast_h_y_f <-
           rbind(input_runsimcast_h, daily_summary_f)
         
-        print(input_runsimcast_h_y_f)
-        return(input_runsimcast_h_y_f)
+        final_summary <- input_runsimcast_h_y_f %>%
+            group_by(date) %>%
+            summarize(
+                hr90_hour = sum(hr90_hour, na.rm = TRUE),
+                tavg_C    = mean(tavg_C, na.rm = TRUE),
+                rain_mm   = sum(rain_mm, na.rm = TRUE),
+                avg_hr    = mean(avg_hr, na.rm = TRUE)
+            ) %>%
+            as.data.frame()
+        
+        print(final_summary)
+        return(final_summary)
         
       }
       
@@ -1477,7 +1487,10 @@ server <- function(input, output, session) {
           }
           
           # As in your original code, force an application on day 24.
-          if (k == 24) {
+          
+          forced_app_day = as.numeric(input$date_emergence - input$date0) 
+          
+          if (k == forced_app_day) {
               abu <- 1
               afu <- 1
               app_ctr <- app_ctr + 1
