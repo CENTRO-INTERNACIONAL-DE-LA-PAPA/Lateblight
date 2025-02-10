@@ -7,8 +7,7 @@ server <- function(input, output, session) {
   URL_base <- 'http://api.weatherapi.com/v1'
   API_Method_history <- '/history.json'
   API_Method_forecast <- '/forecast.json'
-  # API_key <- paste0("?key=",Sys.getenv("API_KEY"))
-  API_key <- '?key=28884cc8d61e46cbb3793258221912'
+  API_key <- paste0("?key=",Sys.getenv("API_KEY"))
   
   
   # Assign NULL to object values with fileinput NULL
