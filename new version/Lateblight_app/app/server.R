@@ -940,10 +940,10 @@ server <- function(input, output, session) {
               group_by(period) %>%
               summarize(
                   # Count the number of hours in the period with relative humidity >= 90.
-                  hhr = sum(hr >= 90, na.rm = TRUE),
+                  hhr = sum(hr >= hrlimite, na.rm = TRUE),
                   # Calculate the average temperature only over hours with hr >= 90.
-                  htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
-                      mean(tmean[hr >= 90], na.rm = TRUE)
+                  htavg = if (sum(hr >= hrlimite, na.rm = TRUE) > 0) {
+                      mean(tmean[hr >= hrlimite], na.rm = TRUE)
                   } else {
                       NA_real_
                   },
@@ -1022,10 +1022,10 @@ server <- function(input, output, session) {
                 group_by(period) %>%
                 summarize(
                     # Count the number of hours in the period with relative humidity >= 90.
-                    hhr = sum(hr >= 90, na.rm = TRUE),
+                    hhr = sum(hr >= hrlimite, na.rm = TRUE),
                     # Calculate the average temperature only over hours with hr >= 90.
-                    htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
-                        mean(tmean[hr >= 90], na.rm = TRUE)
+                    htavg = if (sum(hr >= hrlimite, na.rm = TRUE) > 0) {
+                        mean(tmean[hr >= hrlimite], na.rm = TRUE)
                     } else {
                         NA_real_
                     },
@@ -1117,10 +1117,10 @@ server <- function(input, output, session) {
               group_by(period) %>%
               summarize(
                   # Count the number of hours in the period with relative humidity >= 90.
-                  hhr = sum(hr >= 90, na.rm = TRUE),
+                  hhr = sum(hr >= hrlimite, na.rm = TRUE),
                   # Calculate the average temperature only over hours with hr >= 90.
-                  htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
-                      mean(tmean[hr >= 90], na.rm = TRUE)
+                  htavg = if (sum(hr >= hrlimite, na.rm = TRUE) > 0) {
+                      mean(tmean[hr >= hrlimite], na.rm = TRUE)
                   } else {
                       NA_real_
                   },
@@ -1202,10 +1202,10 @@ server <- function(input, output, session) {
                 group_by(period) %>%
                 summarize(
                     # Count the number of hours in the period with relative humidity >= 90.
-                    hhr = sum(hr >= 90, na.rm = TRUE),
+                    hhr = sum(hr >= hrlimite, na.rm = TRUE),
                     # Calculate the average temperature only over hours with hr >= 90.
-                    htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
-                        mean(tmean[hr >= 90], na.rm = TRUE)
+                    htavg = if (sum(hr >= hrlimite, na.rm = TRUE) > 0) {
+                        mean(tmean[hr >= hrlimite], na.rm = TRUE)
                     } else {
                         NA_real_
                     },
@@ -1286,10 +1286,10 @@ server <- function(input, output, session) {
               group_by(period) %>%
               summarize(
                   # Count the number of hours in the period with relative humidity >= 90.
-                  hhr = sum(hr >= 90, na.rm = TRUE),
+                  hhr = sum(hr >= hrlimite, na.rm = TRUE),
                   # Calculate the average temperature only over hours with hr >= 90.
-                  htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
-                      mean(tmean[hr >= 90], na.rm = TRUE)
+                  htavg = if (sum(hr >= hrlimite, na.rm = TRUE) > 0) {
+                      mean(tmean[hr >= hrlimite], na.rm = TRUE)
                   } else {
                       NA_real_
                   },
@@ -1373,10 +1373,10 @@ server <- function(input, output, session) {
             group_by(period) %>%
             summarize(
                 # Count the number of hours in the period with relative humidity >= 90.
-                hhr = sum(hr >= 90, na.rm = TRUE),
+                hhr = sum(hr >= hrlimite, na.rm = TRUE),
                 # Calculate the average temperature only over hours with hr >= 90.
-                htavg = if (sum(hr >= 90, na.rm = TRUE) > 0) {
-                    mean(tmean[hr >= 90], na.rm = TRUE)
+                htavg = if (sum(hr >= hrlimite, na.rm = TRUE) > 0) {
+                    mean(tmean[hr >= hrlimite], na.rm = TRUE)
                 } else {
                     NA_real_
                 },
