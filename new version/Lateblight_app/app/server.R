@@ -1,14 +1,9 @@
 server <- function(input, output, session) {
-  # INDICAR LAS CREDENCIALES DEL API
-  
-  # aWhereAPI::get_token(uid="1iiGfRRH9BewFNGw7tEOoRv13WbdgI7z", secret="8VSUKD8mrVUQ1gLd")
-  #register_google(key ='AIzaSyB5UWpjiUSyhi4fO7qKck81knTYSVAEdDI')
-  
-  URL_base <- 'http://api.weatherapi.com/v1'
+
+  URL_base <- 'https://api.weatherapi.com/v1'
   API_Method_history <- '/history.json'
   API_Method_forecast <- '/forecast.json'
   API_key <- paste0("?key=",Sys.getenv("API_KEY"))
-  
   
   # Assign NULL to object values with fileinput NULL
   values <- reactiveValues(fileInput = NULL)
@@ -956,6 +951,9 @@ server <- function(input, output, session) {
             c("date", "hr90_hour", "tavg_C", "rain_mm","avg_hr")
           print(daily_summary)
           
+          daily_summary["lat"] = lat
+          daily_summary["long"] = long
+          
           # input-runsimcast: date, hr>90, temp avg, rain
           
           return(daily_summary)
@@ -968,7 +966,7 @@ server <- function(input, output, session) {
             unique(c(seq(
               from = dayinitial,
               to = dayfinal,
-              by = 30
+              by = 29
             ), dayfinal))
           
           list_input_runsimcast <- list()
@@ -1051,6 +1049,9 @@ server <- function(input, output, session) {
           input_runsimcast <- do.call(rbind, list_input_runsimcast)
           input_runsimcast <- unique(input_runsimcast)
           print(input_runsimcast)
+          
+          input_runsimcast["lat"] = lat
+          input_runsimcast["long"] = long
           
           return(input_runsimcast)
           
@@ -1146,7 +1147,7 @@ server <- function(input, output, session) {
               seq(
                 from = dayinitial_h,
                 to = dayfinal_h,
-                by = 30
+                by = 29
               ),
               dayfinal_h
             ))
@@ -1155,6 +1156,7 @@ server <- function(input, output, session) {
           
           
           for (i in 1:length(seq_API_date)) {
+              
             dayinitial2 = seq_API_date[i]
             dayfinal2 = seq_API_date[i + 1]
             
@@ -1320,6 +1322,9 @@ server <- function(input, output, session) {
             ) %>%
             as.data.frame()
         
+        final_summary["lat"] = lat
+        final_summary["long"] = long
+        
         print(final_summary)
         return(final_summary)
         
@@ -1388,6 +1393,9 @@ server <- function(input, output, session) {
         names(daily_summary) <-
             c("date", "hr90_hour", "tavg_C", "rain_mm", "avg_hr")
         
+        daily_summary["lat"] = lat
+        daily_summary["long"] = long
+        
         return(daily_summary)
       }
       
@@ -1398,6 +1406,7 @@ server <- function(input, output, session) {
   
   simcast_model <- function(df_in_simcast, vt) {
       
+      print(class(df_in_simcast))
       idx_na <- which(is.na(df_in_simcast$tavg_C))
       df_in_simcast$tavg_C[idx_na]<-mean(df_in_simcast$tavg_C,na.rm=TRUE)
       vt <- as.character(vt[[1]])
@@ -1410,7 +1419,9 @@ server <- function(input, output, session) {
       fua <- 0  # Accumulated Fungicide Units
       
       n <- nrow(df_in_simcast)
-      # Vectors to record daily values:
+      print(paste0("Table with: ",n," rows"))
+      # Vectors to record daily values:e
+      date_vec <- as.Date(rep(NA, n))
       bu_vec   <- numeric(n)  # daily BU
       fu_vec   <- numeric(n)  # daily FU
       bua_vec  <- numeric(n)  # running accumulated BU
@@ -1489,6 +1500,8 @@ server <- function(input, output, session) {
           
           forced_app_day = as.numeric(input$date_emergence - input$date0) 
           
+          print(paste0("This is the forced day: ", forced_app_day))
+          
           if (k == forced_app_day) {
               abu <- 1
               afu <- 1
@@ -1511,10 +1524,12 @@ server <- function(input, output, session) {
           abu_vec[k]  <- abu
           afu_vec[k]  <- afu
           app_vec[k]  <- app_ctr
+          date_vec[k] <- day
       }
       
       # Prepare the output data frame with the new simulation columns.
       output_simcast <- data.frame(
+          date = date_vec,
           BU = bu_vec,
           FU = fu_vec,
           BUA = bua_vec,
@@ -1526,7 +1541,11 @@ server <- function(input, output, session) {
       )
       
       # Combine the original daily summary with the simulation outputs.
-      output_scmodel <- cbind(df_in_simcast, output_simcast)
+      # output_scmodel <- cbind(df_in_simcast, output_simcast) %>% distinct()
+      output_scmodel <- cbind(output_simcast) %>% distinct()
+      
+      output_scmodel["lat"] = df_in_simcast$lat[1]
+      output_scmodel["long"] = df_in_simcast$long[1]
       
       message("Running simcast model ... Loading")
       return(output_scmodel)
@@ -1545,35 +1564,42 @@ server <- function(input, output, session) {
   tableGS <- reactive({
     click <- input$mymap1a_click
     
-    day0_i <- input$date0
-    # -2 for initial day
-    day0 <- day0_i - 2
+    day0 <- input$date0
     dayn <- input$daten
     hrlimite <- as.numeric(85)
     
     dataxycoord <- values$markers
     print(dataxycoord)
-    print(day0_i)
+    print(class(dataxycoord))
+    print(day0)
     
-    
+    print("#### Getting data from Weather API ####")
     strTable <-
       apply(dataxycoord, 1, function(x)
         climDataAPI_input_model(day0, dayn, x[1], x[2], hrlimite))
+    
+    print("Table with coords")
+    print(strTable)
     
     write.csv(strTable, file = "strTable.csv")
     
     ###############################
     
-    runsimcast2 <- lapply(strTable,
-                          function(x)
-                            simcast_model(x, input$res))
+    print("##### Running Simcast model ###")
+    
+    runsimcast2 <- lapply(strTable, function(x){
+        simcast_model(x, input$res)
+    })
     
     print(runsimcast2)
     
     rsf <- rbindlist(runsimcast2, fill = TRUE, idcol = "ID-Location")
     fungicide_rec <- fungicide_recommendation(rsf,input$res)
-    rsf <- rsf |> 
-        left_join(fungicide_rec,by=join_by("date"=="Date"))
+    rsf <- rsf %>% 
+        group_by(APP) %>% 
+        nest() %>% 
+        left_join(fungicide_rec, by = join_by("APP" == "Application Number")) %>% 
+        unnest(data)
     
     return(list(runsimcast2, rsf))
     
