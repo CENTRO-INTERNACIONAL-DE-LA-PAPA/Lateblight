@@ -1310,7 +1310,7 @@ server <- function(input, output, session) {
         }
         
         input_runsimcast_h_y_f <-
-          rbind(daily_summary_h, daily_summary_f)
+          rbind(input_runsimcast_h, daily_summary_f)
         
         final_summary <- input_runsimcast_h_y_f %>%
             group_by(date) %>%
