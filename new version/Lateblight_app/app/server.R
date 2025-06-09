@@ -1546,6 +1546,7 @@ server <- function(input, output, session) {
       
       output_scmodel["lat"] = df_in_simcast$lat[1]
       output_scmodel["long"] = df_in_simcast$long[1]
+      output_scmodel["variety"] = input$res
       
       message("Running simcast model ... Loading")
       return(output_scmodel)
