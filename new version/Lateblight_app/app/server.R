@@ -1530,7 +1530,7 @@ server <- function(input, output, session) {
           date_vec[k] <- day
           hhr_vec[k] <- hhr
           htavg_vec[k] <- htavg
-          rain_vec[K] <- rain
+          rain_vec[k] <- rain
       }
       
       # Prepare the output data frame with the new simulation columns.
