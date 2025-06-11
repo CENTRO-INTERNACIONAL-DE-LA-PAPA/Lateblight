@@ -1422,6 +1422,9 @@ server <- function(input, output, session) {
       print(paste0("Table with: ",n," rows"))
       # Vectors to record daily values:e
       date_vec <- as.Date(rep(NA, n))
+      hhr_vec <- as.numeric(n)
+      htavg_vec <- as.numeric(n)
+      rain_vec <- as.numeric(n)
       bu_vec   <- numeric(n)  # daily BU
       fu_vec   <- numeric(n)  # daily FU
       bua_vec  <- numeric(n)  # running accumulated BU
@@ -1525,11 +1528,17 @@ server <- function(input, output, session) {
           afu_vec[k]  <- afu
           app_vec[k]  <- app_ctr
           date_vec[k] <- day
+          hhr_vec[k] <- hhr
+          htavg_vec[k] <- htavg
+          rain_vec[K] <- rain
       }
       
       # Prepare the output data frame with the new simulation columns.
       output_simcast <- data.frame(
           date = date_vec,
+          hhr = hhr_vec,
+          htavg = htavg_vec,
+          rain = rain_vec,
           BU = bu_vec,
           FU = fu_vec,
           BUA = bua_vec,
