@@ -61,7 +61,8 @@ RUN apt-get update -qq && apt-get install -y \
 # r packages
 RUN R -e "install.packages('remotes', repos = c(CRAN = 'https://cloud.r-project.org'))"
 RUN R -e "remotes::install_github('rstudio/leaflet')"
-RUN R -e "install.packages(c('shiny','bs4Dash','toastui','shinycustomloader','DT','gdata','DBI','RMySQL','maps','ggmap','shinyTree','dismo','rJava','rsconnect','shiny.i18n','leaflet.extras','data.table','slickR','openair','shinyalert','bslib','htmltools','tippy','fresh','bsicons','rjson'), repos = c(CRAN = 'https://cloud.r-project.org'))"
+RUN R -e "remotes::install_github('yonicd/slickR')"
+RUN R -e "install.packages(c('shiny','bs4Dash','toastui','shinycustomloader','DT','gdata','DBI','RMySQL','maps','ggmap','shinyTree','dismo','rJava','rsconnect','shiny.i18n','leaflet.extras','data.table','openair','shinyalert','bslib','htmltools','tippy','fresh','bsicons','rjson'), repos = c(CRAN = 'https://cloud.r-project.org'))"
 RUN R -e "remotes::install_github('r-lib/svglite')"
 RUN R -e "remotes::install_github('cran/rgdal')"
 RUN R -e "remotes::install_github('cran/tidyverse')"
