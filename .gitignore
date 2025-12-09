@@ -8,3 +8,11 @@
 .httr-oauth
 .DS_Store
 .quarto
+py_version/.venv/
+py_version/__pycache__/
+py_version/.idea/
+py_version/*.pyc
+py_version/OPENAI_API_KEY.txt
+py_version/TAVILY_API_KEY.txt
+py_version/WEATHER_API_KEY.txt
+py_version/.env

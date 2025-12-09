@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  shiny_python:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3838:3838"
+    environment:
+      OPENAI_API_KEY: /run/secrets/openai_api_key
+      TAVILY_API_KEY: /run/secrets/tavily_api_key
+      WEATHER_API_KEY: /run/secrets/weather_api_key
+    secrets:
+      - openai_api_key
+      - tavily_api_key
+      - weather_api_key
+secrets:
+  openai_api_key:
+    file: OPENAI_API_KEY.txt
+  tavily_api_key:
+    file: TAVILY_API_KEY.txt
+  weather_api_key:
+    file: WEATHER_API_KEY.txt

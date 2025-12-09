@@ -1,0 +1,10 @@
+.env
+OPENAI_API_KEY.txt
+TAVILY_API_KEY.txt
+WEATHER_API_KEY.txt
+.venv/
+__pycache__/
+.idea/
+*.pyc
+*.sublime-project
+*.sublime-workspace

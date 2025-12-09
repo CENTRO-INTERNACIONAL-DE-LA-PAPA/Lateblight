@@ -1,0 +1,4 @@
+.env
+OPENAI_API_KEY.txt
+TAVILY_API_KEY.txt
+WEATHER_API_KEY.txt
