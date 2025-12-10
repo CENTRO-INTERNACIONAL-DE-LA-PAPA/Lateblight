@@ -54,6 +54,10 @@ COPY pyproject.toml uv.lock /app/
 # Install Python dependencies with uv (locked, no dev extras)
 RUN uv sync --frozen --no-dev --python /opt/venv/bin/python
 
+# Ensure runtime uses the project virtual environment created by uv sync
+ENV VIRTUAL_ENV=/app/.venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 # Copy the rest of the application code
 COPY . /app
 
