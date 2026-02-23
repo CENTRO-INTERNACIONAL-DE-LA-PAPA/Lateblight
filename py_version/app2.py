@@ -148,9 +148,8 @@ css_file = Path(__file__).parent / "www" / "css" / "styles.css"
 css_app2_file = Path(__file__).parent / "www" / "css" / "app2.css"
 js_app2_file = Path(__file__).parent / "www" / "js" / "app2.js"
 
-df_vars_res = pd.read_csv(
-    Path(__name__).parent.resolve() / "data" / "potato-res-data.csv", sep=";"
-)
+df_vars_res = pd.read_csv(Path(__file__).parent.resolve() / "data" / "potato-res-data.csv")
+df_vars_res.columns = df_vars_res.columns.str.strip()
 
 countries: List[str] = df_vars_res["Country"].unique().tolist()
 
