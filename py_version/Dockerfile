@@ -1,5 +1,7 @@
 # Use the rocker/shiny-verse image as base
-FROM rocker/shiny-verse:latest
+# Pinned: the "latest" tag moved to Ubuntu 26.04 (R 4.6.2) on 2026-10-29 and dropped
+# libpcre3-dev / libatlas-base-dev, which broke the Jenkins build. 4.5.2 = Ubuntu 24.04.
+FROM rocker/shiny-verse:4.5.2
 
 # Set timezone
 ENV TZ=America/Lima
@@ -12,7 +14,7 @@ RUN apt-get update -qq && \
     curl \
     gcc \
     gfortran \
-    libatlas-base-dev \
+    libopenblas-dev \
     libbz2-dev \
     libcairo2 \
     libcurl4-openssl-dev \
@@ -20,7 +22,7 @@ RUN apt-get update -qq && \
     liblzma-dev \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
-    libpcre3-dev \
+    libpcre2-dev \
     libsodium-dev \
     libtiff5-dev \
     zlib1g-dev \
